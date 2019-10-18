@@ -27,6 +27,8 @@ namespace ProjektGK1_1._0
             polygons = new List<Polygon>();
             con_parallel.Checked = false;
         }
+
+
         #region Zmienne
 
         private const int VERTICE_SIZE = 10;
@@ -143,9 +145,9 @@ namespace ProjektGK1_1._0
                     Point midpoint = new Point(old.p.X + (poly.points[i].p.X - old.p.X) / 2, old.p.Y + (poly.points[i].p.Y - old.p.Y) / 2);
                     midpoint.Offset(-VERTICE_SIZE, -VERTICE_SIZE);
                     Rectangle rec = new Rectangle(midpoint.X, midpoint.Y, VERTICE_SIZE * 2, VERTICE_SIZE * 2);
-                    e.FillEllipse(Brushes.LightGray, rec);
+                    e.FillEllipse(Brushes.Blue, rec);
                     midpoint.Offset(VERTICE_SIZE / 2, VERTICE_SIZE / 2);
-                    e.DrawString(old.constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.Red, midpoint);
+                    e.DrawString(old.constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.White, midpoint);
                 }
                 else if (old.following_edge_constrain == ConstraintType.PARALLEL)
                 {
@@ -154,7 +156,7 @@ namespace ProjektGK1_1._0
                     Rectangle rec = new Rectangle(midpoint.X, midpoint.Y, VERTICE_SIZE * 2, VERTICE_SIZE * 2);
                     e.FillEllipse(Brushes.DarkOliveGreen, rec);
                     midpoint.Offset(VERTICE_SIZE / 2, VERTICE_SIZE / 2);
-                    e.DrawString(old.constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.Red, midpoint);
+                    e.DrawString(old.constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.White, midpoint);
                 }
 
                 old = poly.points[i];
@@ -165,9 +167,9 @@ namespace ProjektGK1_1._0
                 Point midpoint = new Point(poly.points.Last().p.X + (poly.points[0].p.X - poly.points.Last().p.X) / 2, poly.points.Last().p.Y + (poly.points[0].p.Y - poly.points.Last().p.Y) / 2);
                 midpoint.Offset(-VERTICE_SIZE, -VERTICE_SIZE);
                 Rectangle rec = new Rectangle(midpoint.X, midpoint.Y, VERTICE_SIZE * 2, VERTICE_SIZE * 2);
-                e.FillEllipse(Brushes.LightGray, rec);
+                e.FillEllipse(Brushes.Blue, rec);
                 midpoint.Offset(VERTICE_SIZE / 2, VERTICE_SIZE / 2);
-                e.DrawString(poly.points.Last().constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.Red, midpoint);
+                e.DrawString(poly.points.Last().constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.White, midpoint);
             }
             else if (poly.points.Last().following_edge_constrain == ConstraintType.PARALLEL)
             {
@@ -176,7 +178,7 @@ namespace ProjektGK1_1._0
                 Rectangle rec = new Rectangle(midpoint.X, midpoint.Y, VERTICE_SIZE * 2, VERTICE_SIZE * 2);
                 e.FillEllipse(Brushes.DarkOliveGreen, rec);
                 midpoint.Offset(VERTICE_SIZE / 2, VERTICE_SIZE / 2);
-                e.DrawString(poly.points.Last().constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.Red, midpoint);
+                e.DrawString(poly.points.Last().constraint_id.ToString(), SystemFonts.DefaultFont, Brushes.White, midpoint);
             }
 
             foreach (var p in poly.points)
@@ -221,6 +223,7 @@ namespace ProjektGK1_1._0
                 {
                     Polygon poly = polygons[res.Item3];
                     poly.RemoveConstraint(poly.points[res.Item2]);
+                    poly.RemoveConstraint(poly.points[res.Item2 > 0 ? res.Item2 - 1 : poly.points.Count - 1]);
                     poly.points.RemoveAt(res.Item2);
 
                 }
@@ -248,6 +251,16 @@ namespace ProjektGK1_1._0
 
             drawing_panel.Invalidate();
 
+        }
+        public void DeleteConstrint(MouseEventArgs e)
+        {
+            var res = FindIfOnLine(e.Location);
+            if (res.Item1)
+            {
+                var poly = polygons[res.polygon];
+                poly.RemoveConstraint(poly.points[res.fvertex]);
+                drawing_panel.Invalidate();
+            }
         }
 
         #endregion
@@ -377,9 +390,10 @@ namespace ProjektGK1_1._0
                             tmp.a2.constraint_id = tmp.GetId();
                             tmp.a2.following_edge_constrain = ConstraintType.EQUAL_LENGTH;
                             tmp.IncrementId();
-                            drawing_panel.Invalidate();
+                            
                         }
                         tmp.polygon.Popraw();
+                        drawing_panel.Invalidate();
                     }
                     else
                     {
@@ -429,15 +443,16 @@ namespace ProjektGK1_1._0
                             tmp.a2.brush = Brushes.Black;
                         }
                         times_clicked = 0;
-                        if (tmp.polygon.AddConstraint(tmp))
+                        if ((tmp.a1!=tmp.b2&&tmp.b1!=tmp.a2)&&tmp.polygon.AddConstraint(tmp))
                         {
                             tmp.a1.constraint_id = tmp.GetId();
                             tmp.a1.following_edge_constrain = ConstraintType.PARALLEL;
                             tmp.a2.constraint_id = tmp.GetId();
                             tmp.a2.following_edge_constrain = ConstraintType.PARALLEL;
                             tmp.IncrementId();
-                            drawing_panel.Invalidate();
+                            
                         }
+                        drawing_panel.Invalidate();
                         tmp.polygon.Popraw();
                     }
                     else
@@ -494,6 +509,10 @@ namespace ProjektGK1_1._0
             if (con_parallel.Checked)
             {
                 AddParallelConstraint(e.Location);
+            }
+            if (delete_constraint.Checked)
+            {
+                DeleteConstrint(e);
             }
 
         }
@@ -650,6 +669,7 @@ namespace ProjektGK1_1._0
                 return Math.Sqrt(diffX * diffX + diffY * diffY);
             }
         }
+
         public class Length : Constraint
         {
             public override bool IsConstraintValid()
@@ -667,8 +687,8 @@ namespace ProjektGK1_1._0
                     double alfa = len / SegmentLength(a2.p, b2.p);
                     Point v = new Point(b2.p.X - a2.p.X, b2.p.Y - a2.p.Y);
 
-                    v.X = (int)(v.X * alfa);
-                    v.Y = (int)(v.Y * alfa);
+                    v.X = (int)Math.Round(v.X * alfa);
+                    v.Y = (int)Math.Round(v.Y * alfa);
                     b2.p.X = a2.p.X + v.X;
                     b2.p.Y = a2.p.Y + v.Y;
                 }
@@ -705,8 +725,8 @@ namespace ProjektGK1_1._0
                     double wsp = len2 / len;
                     Point v = new Point(b1.p.X - a1.p.X, b1.p.Y - a1.p.Y);
 
-                    v.X = (int)(Math.Ceiling(v.X * wsp));
-                    v.Y = (int)(Math.Ceiling(v.Y * wsp));
+                    v.X = (int)(Math.Round(v.X * wsp));
+                    v.Y = (int)(Math.Round(v.Y * wsp));
                     if (Angle(a1.p, b1.p, a2.p, b2.p) > 0)
                     {
                         b2.p.X = a2.p.X + v.X;
@@ -732,10 +752,10 @@ namespace ProjektGK1_1._0
                 con.a1.following_edge_constrain = ConstraintType.NONE;
                 con.a2.constraint_id = -1;
                 con.a2.following_edge_constrain = ConstraintType.NONE;
-                con.b1.constraint_id = -1;
-                con.b1.following_edge_constrain = ConstraintType.NONE;
-                con.b2.constraint_id = -1;
-                con.b2.following_edge_constrain = ConstraintType.NONE;
+                //con.b1.constraint_id = -1;
+                //con.b1.following_edge_constrain = ConstraintType.NONE;
+                //con.b2.constraint_id = -1;
+                //con.b2.following_edge_constrain = ConstraintType.NONE;
                 constraints.Remove(con);
             }
             public void RemoveConstraint(List<Constraint> con_list)
@@ -747,10 +767,10 @@ namespace ProjektGK1_1._0
                     con.a1.following_edge_constrain = ConstraintType.NONE;
                     con.a2.constraint_id = -1;
                     con.a2.following_edge_constrain = ConstraintType.NONE;
-                    con.b1.constraint_id = -1;
-                    con.b1.following_edge_constrain = ConstraintType.NONE;
-                    con.b2.constraint_id = -1;
-                    con.b2.following_edge_constrain = ConstraintType.NONE;
+                    //con.b1.constraint_id = -1;
+                    //con.b1.following_edge_constrain = ConstraintType.NONE;
+                    //con.b2.constraint_id = -1;
+                    //con.b2.following_edge_constrain = ConstraintType.NONE;
                     constraints.Remove(con);
                 }
             }
@@ -759,7 +779,7 @@ namespace ProjektGK1_1._0
                 int index = points.FindIndex((VertexPoint vp) => vp.p == point.p);
                 if (index >= 0)
                     if (IsConstraintOnEdge(point.p, (index + 1 < points.Count ? points[index + 1].p : points[0].p)))
-                        RemoveConstraint(constraints.FindAll((Constraint con) => con.a1.p == point.p || con.a2.p == point.p || con.b1.p == point.p || con.b2.p == point.p));
+                        RemoveConstraint(constraints.FindAll((Constraint con) => con.a1.p == point.p || con.a2.p == point.p));
             }
             public bool IsConstraintOnEdge(Point a, Point b)
             {
@@ -841,14 +861,8 @@ namespace ProjektGK1_1._0
 
         }
 
+
         #endregion
-
-
     }
-
-
-
-
-
 
 }
