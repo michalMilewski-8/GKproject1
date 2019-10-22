@@ -1,0 +1,17 @@
+Instrukcja obsługi projektu:
+
+Po prawej stronie okna znajdują się RadioButtony służące do wyboru akcji. 
+Po wybraniu "Add Polygon" naciskając lewym klawiszem myszy w obszarze rysowania dodajemy kolejne wierzchołki nowego wielokąta 
+(wielokąt musi mieć co najmnije 3 wierzchołki, inaczej po zmianie akcji wielokąt zniknie). 
+
+Klawisz "Enter" można użyć do zatwierdzenia obecnej akcji bądź do zaprzestania dodawania ograniczenia, podczas gdy dodało się już jedną krawędź do ograniczenia.
+
+Zielonym kółkiem z białą cyfrą oznaczone jest ograniczenie równoległości krawędzi.
+Niebieskim kółkiem z białą cyfrą oznaczone jest ograniczenie równej długości krawędzi.
+
+Algorytm poprawiania ograniczeń:
+
+Wierzchołki w wielokącie zapisane są na liście. 
+1. Zaczynając od pierwszego wierzchołka na liście jeśli ograniczenie którego jedna z krawędzi zaczyna się w danym wierzchołku jest niespełnione to popraw.
+2. Poprawianie odbywa się poprzez zmianę końca krawędzi której początek jest dalej na liście wierzchołków.
+3. Po jednokrotnym przejściu listy wierzchołków sprawdzane jest czy wszystkie ograniczenia są poprawne, jeśli nie są to jeszcze raz przechodzi się po wszystkich wierzchołkach.
