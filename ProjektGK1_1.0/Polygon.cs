@@ -21,10 +21,6 @@ namespace ProjektGK1_1._0
             con.a1.following_edge_constrain = ConstraintType.NONE;
             con.a2.constraint_id = -1;
             con.a2.following_edge_constrain = ConstraintType.NONE;
-            //con.b1.constraint_id = -1;
-            //con.b1.following_edge_constrain = ConstraintType.NONE;
-            //con.b2.constraint_id = -1;
-            //con.b2.following_edge_constrain = ConstraintType.NONE;
             constraints.Remove(con);
         }
         public void RemoveConstraint(List<Constraint> con_list)
@@ -36,10 +32,6 @@ namespace ProjektGK1_1._0
                 con.a1.following_edge_constrain = ConstraintType.NONE;
                 con.a2.constraint_id = -1;
                 con.a2.following_edge_constrain = ConstraintType.NONE;
-                //con.b1.constraint_id = -1;
-                //con.b1.following_edge_constrain = ConstraintType.NONE;
-                //con.b2.constraint_id = -1;
-                //con.b2.following_edge_constrain = ConstraintType.NONE;
                 constraints.Remove(con);
             }
         }

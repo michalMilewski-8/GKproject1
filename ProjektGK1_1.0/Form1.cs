@@ -109,32 +109,40 @@ namespace ProjektGK1_1._0
             if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
             if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
             if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
-            int longest = Math.Abs(w);
-            int shortest = Math.Abs(h);
-            if (!(longest > shortest))
+            try
             {
-                longest = Math.Abs(h);
-                shortest = Math.Abs(w);
-                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
-                dx2 = 0;
+                int longest = Math.Abs(w);
+                int shortest = Math.Abs(h);
+                if (!(longest > shortest))
+                {
+                    longest = Math.Abs(h);
+                    shortest = Math.Abs(w);
+                    if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+                    dx2 = 0;
+                }
+                int numerator = longest >> 1;
+                for (int i = 0; i <= longest; i++)
+                {
+                    PutPixel(x, y, e, b);
+                    numerator += shortest;
+                    if (!(numerator < longest))
+                    {
+                        numerator -= longest;
+                        x += dx1;
+                        y += dy1;
+                    }
+                    else
+                    {
+                        x += dx2;
+                        y += dy2;
+                    }
+                }
             }
-            int numerator = longest >> 1;
-            for (int i = 0; i <= longest; i++)
+            catch (Exception err)
             {
-                PutPixel(x, y, e, b);
-                numerator += shortest;
-                if (!(numerator < longest))
-                {
-                    numerator -= longest;
-                    x += dx1;
-                    y += dy1;
-                }
-                else
-                {
-                    x += dx2;
-                    y += dy2;
-                }
+                return;
             }
+
         }
         private void PutPixel(int x, int y, Graphics e, Brush b)
         {
@@ -373,8 +381,9 @@ namespace ProjektGK1_1._0
                 }
                 else if (times_clicked == 1)
                 {
-                    if (tmp.polygon == polygons[res.polygon])
+                    if (tmp.polygon == polygons[res.polygon] && tmp.a1 != polygons[res.Item3].points[res.fvertex] && tmp.b1 != polygons[res.Item3].points[res.svertex] )
                     {
+
                         if (tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == tmp.a1.p.X) && (a.p.Y == tmp.a1.p.Y); }) < tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == e.X) && (a.p.Y == e.Y); }))
                         {
                             tmp.a2 = polygons[res.Item3].points[res.fvertex];
@@ -408,6 +417,7 @@ namespace ProjektGK1_1._0
                         tmp.error();
                         times_clicked = 0;
                         tmp = null;
+                        drawing_panel.Invalidate();
                     }
 
 
@@ -433,7 +443,7 @@ namespace ProjektGK1_1._0
                 }
                 else if (times_clicked == 1)
                 {
-                    if (tmp.polygon == polygons[res.polygon])
+                    if (tmp.polygon == polygons[res.polygon] && tmp.a1 != polygons[res.Item3].points[res.fvertex] && tmp.b1 != polygons[res.Item3].points[res.svertex])
                     {
                         if (tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == tmp.a1.p.X) && (a.p.Y == tmp.a1.p.Y); }) < tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == e.X) && (a.p.Y == e.Y); }))
                         {
@@ -468,6 +478,7 @@ namespace ProjektGK1_1._0
                         tmp.error();
                         times_clicked = 0;
                         tmp = null;
+                        drawing_panel.Invalidate();
                     }
 
 

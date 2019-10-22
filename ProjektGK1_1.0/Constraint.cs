@@ -57,13 +57,17 @@ namespace ProjektGK1_1._0
             if (!IsConstraintValid())
             {
                 double len = SegmentLength(a1.p, b1.p);
-                double alfa = len / SegmentLength(a2.p, b2.p);
-                Point v = new Point(b2.p.X - a2.p.X, b2.p.Y - a2.p.Y);
+                if (SegmentLength(a2.p, b2.p) >= 0.01)
+                {
+                    double alfa = len / SegmentLength(a2.p, b2.p);
+                    Point v = new Point(b2.p.X - a2.p.X, b2.p.Y - a2.p.Y);
 
-                v.X = (int)Math.Round(v.X * alfa);
-                v.Y = (int)Math.Round(v.Y * alfa);
-                b2.p.X = a2.p.X + v.X;
-                b2.p.Y = a2.p.Y + v.Y;
+                    v.X = (int)Math.Round(v.X * alfa);
+                    v.Y = (int)Math.Round(v.Y * alfa);
+                    if(v.X<20000 && v.Y <20000)
+                    b2.p.X = a2.p.X + v.X;
+                    b2.p.Y = a2.p.Y + v.Y;
+                }
             }
         }
     }
@@ -96,19 +100,22 @@ namespace ProjektGK1_1._0
                 double len = SegmentLength(a1.p, b1.p);
                 double len2 = SegmentLength(a2.p, b2.p);
                 double wsp = len2 / len;
-                Point v = new Point(b1.p.X - a1.p.X, b1.p.Y - a1.p.Y);
+                if (len >= 0.01)
+                {
+                    Point v = new Point(b1.p.X - a1.p.X, b1.p.Y - a1.p.Y);
 
-                v.X = (int)(Math.Round(v.X * wsp));
-                v.Y = (int)(Math.Round(v.Y * wsp));
-                if (Angle(a1.p, b1.p, a2.p, b2.p) > 0)
-                {
-                    b2.p.X = a2.p.X + v.X;
-                    b2.p.Y = a2.p.Y + v.Y;
-                }
-                else
-                {
-                    b2.p.X = a2.p.X - v.X;
-                    b2.p.Y = a2.p.Y - v.Y;
+                    v.X = (int)(Math.Round(v.X * wsp));
+                    v.Y = (int)(Math.Round(v.Y * wsp));
+                    if (Angle(a1.p, b1.p, a2.p, b2.p) > 0)
+                    {
+                        b2.p.X = a2.p.X + v.X;
+                        b2.p.Y = a2.p.Y + v.Y;
+                    }
+                    else
+                    {
+                        b2.p.X = a2.p.X - v.X;
+                        b2.p.Y = a2.p.Y - v.Y;
+                    }
                 }
             }
         }
