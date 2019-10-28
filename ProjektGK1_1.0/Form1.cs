@@ -31,7 +31,7 @@ namespace ProjektGK1_1._0
 
             AddParallelConstraint(new Point(270, 500));
             AddParallelConstraint(new Point(50, 90));
-            
+
             drawing_panel.Invalidate();
         }
 
@@ -381,7 +381,7 @@ namespace ProjektGK1_1._0
                 }
                 else if (times_clicked == 1)
                 {
-                    if (tmp.polygon == polygons[res.polygon] && tmp.a1 != polygons[res.Item3].points[res.fvertex] && tmp.b1 != polygons[res.Item3].points[res.svertex] )
+                    if (tmp.polygon == polygons[res.polygon] && tmp.a1 != polygons[res.Item3].points[res.fvertex] && tmp.b1 != polygons[res.Item3].points[res.svertex])
                     {
 
                         if (tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == tmp.a1.p.X) && (a.p.Y == tmp.a1.p.Y); }) < tmp.polygon.points.FindIndex(0, match: (VertexPoint a) => { return (a.p.X == e.X) && (a.p.Y == e.Y); }))
@@ -498,6 +498,154 @@ namespace ProjektGK1_1._0
             }
             tmp = null;
             times_clicked = 0;
+        }
+
+        // Find the point of intersection between
+        // the lines p1 --> p2 and p3 --> p4.
+        // http://csharphelper.com/blog/2014/08/determine-where-two-lines-intersect-in-c/
+        private void FindIntersection(
+            PointF p1, PointF p2, PointF p3, PointF p4,
+            out bool lines_intersect, out bool segments_intersect,
+            out PointF intersection,
+            out PointF close_p1, out PointF close_p2)
+        {
+            // Get the segments' parameters.
+            float dx12 = p2.X - p1.X;
+            float dy12 = p2.Y - p1.Y;
+            float dx34 = p4.X - p3.X;
+            float dy34 = p4.Y - p3.Y;
+
+            // Solve for t1 and t2
+            float denominator = (dy12 * dx34 - dx12 * dy34);
+
+            float t1 =
+                ((p1.X - p3.X) * dy34 + (p3.Y - p1.Y) * dx34)
+                    / denominator;
+            if (float.IsInfinity(t1))
+            {
+                // The lines are parallel (or close enough to it).
+                lines_intersect = false;
+                segments_intersect = false;
+                intersection = new PointF(float.NaN, float.NaN);
+                close_p1 = new PointF(float.NaN, float.NaN);
+                close_p2 = new PointF(float.NaN, float.NaN);
+                return;
+            }
+            lines_intersect = true;
+
+            float t2 =
+                ((p3.X - p1.X) * dy12 + (p1.Y - p3.Y) * dx12)
+                    / -denominator;
+
+            // Find the point of intersection.
+            intersection = new PointF(p1.X + dx12 * t1, p1.Y + dy12 * t1);
+
+            // The segments intersect if t1 and t2 are between 0 and 1.
+            segments_intersect =
+                ((t1 >= 0) && (t1 <= 1) &&
+                 (t2 >= 0) && (t2 <= 1));
+
+            // Find the closest points on the segments.
+            if (t1 < 0)
+            {
+                t1 = 0;
+            }
+            else if (t1 > 1)
+            {
+                t1 = 1;
+            }
+
+            if (t2 < 0)
+            {
+                t2 = 0;
+            }
+            else if (t2 > 1)
+            {
+                t2 = 1;
+            }
+
+            close_p1 = new PointF(p1.X + dx12 * t1, p1.Y + dy12 * t1);
+            close_p2 = new PointF(p3.X + dx34 * t2, p3.Y + dy34 * t2);
+        }
+
+        public bool cmp_point(Point p1,Point p2)
+        {
+            return !(p1.X > p2.X - 5 && p1.X < p2.X + 5 && p1.Y > p2.Y - 5 && p1.Y < p2.Y + 5);
+        }
+
+        public void AddNewVerticesOnIntersections()
+        {
+            List<Polygon> new_polygons = new List<Polygon>();
+            bool isIntersecting = false;
+            PointF closep1 = new PointF();
+            PointF closep2 = new PointF();
+            PointF randomp = new PointF();
+            bool random = false;
+            
+
+            for (int k = 0; k < polygons.Count; k++)
+            {
+                List<(VertexPoint, VertexPoint)> toadd = new List<(VertexPoint, VertexPoint)>();
+                new_polygons.Add(new Polygon());
+                Polygon poly = polygons[k];
+
+                for (int i = 0; i < poly.points.Count-1; i++)
+                {
+
+
+                    Point p1 = poly.points[i].p;
+                    Point p2 = poly.points[i + 1].p;
+                    Point p3;
+                    Point p4;
+                    for (int j = i + 1; j < poly.points.Count-1; j++)
+                    {
+                        isIntersecting = false;
+
+                        p3 = poly.points[j].p;
+                        p4 = poly.points[j + 1].p;
+                        if (p1 != p3 && p2 != p4 && p1 != p4 && p2 != p3 && cmp_point(p1,p3) && cmp_point(p1, p4) && cmp_point(p2, p3) && cmp_point(p2, p4))
+                        {
+                            FindIntersection(p1, p2, p3, p4, out random, out isIntersecting, out randomp, out closep1, out closep2);
+
+                            if (isIntersecting)
+                            {
+                                toadd.Add((poly.points[i], new VertexPoint(new Point((int)Math.Round(closep1.X), (int)Math.Round(closep1.Y)))));
+                                toadd.Add((poly.points[j], new VertexPoint(new Point((int)Math.Round(closep2.X), (int)Math.Round(closep2.Y)))));
+                                //poly.points.Insert(i, new VertexPoint(new Point((int)Math.Round(closep1.X), (int)Math.Round(closep1.Y))));
+                                //poly.points.Insert(j, new VertexPoint(new Point((int)Math.Round(closep2.X), (int)Math.Round(closep2.Y))));
+
+                            }
+                        }
+
+                    }
+
+                    p3 = poly.points[poly.points.Count - 1].p;
+                    p4 = poly.points[0].p;
+                    if (p1 != p3 && p2 != p4 && p1 != p4 && p2 != p3 && cmp_point(p1, p3) && cmp_point(p1, p4) && cmp_point(p2, p3) && cmp_point(p2, p4))
+                    {
+                        FindIntersection(p1, p2, p3, p4, out random, out isIntersecting, out randomp, out closep1, out closep2);
+
+                        if (isIntersecting)
+                        {
+                            toadd.Add((poly.points[i], new VertexPoint(new Point((int)Math.Round(closep1.X), (int)Math.Round(closep1.Y)))));
+                            toadd.Add((poly.points.Last(), new VertexPoint(new Point((int)Math.Round(closep2.X), (int)Math.Round(closep2.Y)))));
+                            //poly.points.Insert(i, new VertexPoint(new Point((int)Math.Round(closep1.X), (int)Math.Round(closep1.Y))));
+                            //poly.points.Insert(0, new VertexPoint(new Point((int)Math.Round(closep2.X), (int)Math.Round(closep2.Y))));
+
+                        }
+                    }
+
+                }
+
+                foreach(var ad in toadd)
+                {
+                    poly.points.Insert(poly.points.IndexOf(ad.Item1)+1, ad.Item2);
+                }
+
+            }
+
+
+            drawing_panel.Invalidate();
         }
 
         #endregion
@@ -666,9 +814,13 @@ namespace ProjektGK1_1._0
             NullTmpConstraint();
         }
 
+
         #endregion
 
-
+        private void zamien_Click(object sender, EventArgs e)
+        {
+            AddNewVerticesOnIntersections();
+        }
     }
 
 }
